@@ -2,9 +2,10 @@
   "name": "nodejs23-rest-api",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "start": "cross-env NODE_ENV=production node ./bin/server.js",
-    "start:dev": "cross-env NODE_ENV=development nodemon ./bin/server.js",
+    "start": "cross-env NODE_ENV=production node ./bin/server.cjs",
+    "start:dev": "cross-env NODE_ENV=development nodemon ./bin/server.cjs",
     "lint": "eslint **/*.js",
     "lint:fix": "eslint --fix **/*.js"
   },
@@ -15,11 +16,32 @@
     "morgan": "1.10.0"
   },
   "devDependencies": {
-    "eslint": "^7.19.0",
+    "@babel/core": "^7.13.14",
+    "@babel/eslint-parser": "^7.13.14",
+    "@babel/plugin-proposal-class-properties": "^7.13.0",
+    "@babel/plugin-proposal-private-methods": "^7.13.0",
+    "@babel/plugin-syntax-top-level-await": "^7.12.13",
+    "eslint": "^7.23.0",
     "eslint-config-standard": "^16.0.2",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-promise": "^4.3.1",
     "nodemon": "2.0.7"
-  }
+  },
+  "description": "Выполните форк этого репозитория для выполнения домашних заданий (2-6)\r Форк создаст репозиторий на вашем http://github.com",
+  "main": "app.cjs",
+  "bin": {
+    "nodejs23-rest-api": "server.cjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RefrigeratorUA/nodejs-homework-rest-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RefrigeratorUA/nodejs-homework-rest-api/issues"
+  },
+  "homepage": "https://github.com/RefrigeratorUA/nodejs-homework-rest-api#readme"
 }
