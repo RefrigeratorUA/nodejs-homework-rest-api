@@ -6,14 +6,20 @@
   "scripts": {
     "start": "cross-env NODE_ENV=production node ./bin/server.cjs",
     "start:dev": "cross-env NODE_ENV=development nodemon ./bin/server.cjs",
-    "lint": "eslint **/*.js",
-    "lint:fix": "eslint --fix **/*.js"
+    "lint": "eslint **/*.*js",
+    "lint:fix": "eslint --fix **/*.*js"
   },
   "dependencies": {
+    "commander": "7.2.0",
     "cors": "2.8.5",
     "cross-env": "7.0.3",
+    "dotenv": "^8.2.0",
     "express": "4.17.1",
-    "morgan": "1.10.0"
+    "got": "11.8.2",
+    "joi": "^17.4.0",
+    "lowdb": "^1.0.0",
+    "morgan": "1.10.0",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@babel/core": "^7.13.14",
@@ -27,21 +33,5 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.3.1",
     "nodemon": "2.0.7"
-  },
-  "description": "Выполните форк этого репозитория для выполнения домашних заданий (2-6)\r Форк создаст репозиторий на вашем http://github.com",
-  "main": "app.cjs",
-  "bin": {
-    "nodejs23-rest-api": "server.cjs"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/RefrigeratorUA/nodejs-homework-rest-api.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/RefrigeratorUA/nodejs-homework-rest-api/issues"
-  },
-  "homepage": "https://github.com/RefrigeratorUA/nodejs-homework-rest-api#readme"
+  }
 }
