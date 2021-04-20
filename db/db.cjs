@@ -1,11 +1,19 @@
-const low = require('lowdb')
-const path = require('path')
-const FileSync = require('lowdb/adapters/FileSync')
+const { MongoClient } = require('mongodb')
+require('dotenv').config()
+const uriDataBase = process.env.URI_DB
 
-const adapter = new FileSync(path.join(__dirname, '../model/contacts.json'))
-const db = low(adapter)
+// eslint-disable-next-line new-cap
+const db = new MongoClient.connect(uriDataBase, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  poolSize: 5,
+})
 
-// Set some defaults
-db.defaults({ contacts: [] }).write()
+process.on('SIGINT', async () => {
+  const client = await db
+  client.close()
+  console.log('Connection for DB disconnected and app terminated')
+  process.exit()
+})
 
 module.exports = db

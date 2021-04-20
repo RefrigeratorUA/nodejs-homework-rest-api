@@ -1,38 +1,47 @@
-const { v4: uuid } = require('uuid')
-const db = require('../db/db.cjs')
+const { ObjectID } = require('mongodb')
 
-const getAll = () => {
-  return db.get('contacts').value()
-}
-
-const getById = ({ contactId }) => {
-  return db.get('contacts').find({ id: contactId }).value()
-}
-
-const remove = ({ contactId }) => {
-  const [item] = db.get('contacts').remove({ id: contactId }).write()
-  return item
-}
-
-const create = body => {
-  const item = {
-    id: uuid(),
-    ...body,
+class ContactsRepository {
+  constructor(client) {
+    this.collection = client.db('db-contacts').collection('contacts')
   }
-  db.get('contacts').push(item).write()
-  return item
+
+  async getAll() {
+    const results = await this.collection.find({}).toArray()
+    return results
+  }
+
+  async getById(id) {
+    const contactID = ObjectID(id)
+    const [result] = await this.collection.find({ _id: contactID }).toArray()
+    return result
+  }
+
+  async create(body) {
+    const item = {
+      ...body,
+      ...(body.favorite ? {} : { favorite: false }),
+    }
+    const {
+      ops: [result],
+    } = await this.collection.insertOne(item)
+    return result
+  }
+
+  async remove(id) {
+    const contactID = ObjectID(id)
+    const { value: result } = await this.collection.findOneAndDelete({ _id: contactID })
+    return result
+  }
+
+  async update(id, body) {
+    const contactID = ObjectID(id)
+    const { value: result } = await this.collection.findOneAndUpdate(
+      { _id: contactID },
+      { $set: body },
+      { returnOriginal: false },
+    )
+    return result
+  }
 }
 
-const update = (contactId, body) => {
-  const item = db.get('contacts').find({ id: contactId }).assign(body).value()
-  db.write()
-  return item.id ? item : null
-}
-
-module.exports = {
-  getAll,
-  getById,
-  remove,
-  create,
-  update,
-}
+module.exports = ContactsRepository
