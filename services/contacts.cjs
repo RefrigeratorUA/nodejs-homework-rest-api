@@ -1,12 +1,8 @@
 const { ContactsRepository } = require('../repositories/index.cjs')
-const db = require('../db/db.cjs')
 
 class ContactsService {
   constructor() {
-    process.nextTick(async () => {
-      const client = await db
-      this.repositories = { contacts: new ContactsRepository(client) }
-    })
+    this.repositories = { contacts: new ContactsRepository() }
   }
 
   async getAll() {

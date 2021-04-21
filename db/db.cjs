@@ -1,19 +1,33 @@
-const { MongoClient } = require('mongodb')
+const mongoose = require('mongoose')
+
 require('dotenv').config()
 const uriDataBase = process.env.URI_DB
 
-// eslint-disable-next-line new-cap
-const db = new MongoClient.connect(uriDataBase, {
-  useNewUrlParser: true,
+const db = mongoose.connect(uriDataBase, {
   useUnifiedTopology: true,
-  poolSize: 5,
+  useCreateIndex: true,
+  useNewUrlParser: true,
+  useFindAndModify: false,
 })
 
-process.on('SIGINT', async () => {
-  const client = await db
-  client.close()
-  console.log('Connection for DB disconnected and app terminated')
-  process.exit()
+mongoose.connection.on('connected', () => {
+  console.log('Database connection successful')
+})
+
+mongoose.connection.on('error', error => {
+  console.log(`Mongoose connection error: ${error.message}`)
+  process.exit(1)
+})
+
+mongoose.connection.on('disconnected', () => {
+  console.log('Mongoose disconnected')
+})
+
+process.on('SIGINT', () => {
+  mongoose.connection.close(() => {
+    console.log('Connection for DB disconnected and app terminated')
+    process.exit(1)
+  })
 })
 
 module.exports = db
