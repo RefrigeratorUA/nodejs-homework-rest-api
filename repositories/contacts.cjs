@@ -1,8 +1,22 @@
 const { ObjectID } = require('mongodb')
+const { ErrorHandler } = require('../helpers/errorHandler.cjs')
+const { httpStatusCodes } = require('../helpers/httpstatuscodes.cjs')
 
 class ContactsRepository {
   constructor(client) {
-    this.collection = client.db('db-contacts').collection('contacts')
+    this.collection = client.db().collection('contacts')
+  }
+
+  #getMongoId(id) {
+    try {
+      return ObjectID(id)
+    } catch (error) {
+      throw new ErrorHandler(
+        httpStatusCodes.BAD_REQUEST,
+        `MongoDB _id: ${error.message}`,
+        'Bad Request',
+      )
+    }
   }
 
   async getAll() {
@@ -11,7 +25,7 @@ class ContactsRepository {
   }
 
   async getById(id) {
-    const contactID = ObjectID(id)
+    const contactID = this.#getMongoId(id)
     const [result] = await this.collection.find({ _id: contactID }).toArray()
     return result
   }
@@ -28,13 +42,13 @@ class ContactsRepository {
   }
 
   async remove(id) {
-    const contactID = ObjectID(id)
+    const contactID = this.#getMongoId(id)
     const { value: result } = await this.collection.findOneAndDelete({ _id: contactID })
     return result
   }
 
   async update(id, body) {
-    const contactID = ObjectID(id)
+    const contactID = this.#getMongoId(id)
     const { value: result } = await this.collection.findOneAndUpdate(
       { _id: contactID },
       { $set: body },
