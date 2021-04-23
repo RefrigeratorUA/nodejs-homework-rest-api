@@ -1,17 +1,12 @@
 const { httpStatusCodes } = require('../helpers/httpstatuscodes.cjs')
-const {
-  listContacts,
-  getContactById,
-  removeContact,
-  addContact,
-  updateContact,
-} = require('../model/index.cjs')
+const { ContactsService } = require('../services/index.cjs')
+const contactsService = new ContactsService()
 
-const getAll = async (req, res, next) => {
+const listContacts = async (req, res, next) => {
   try {
-    const contacts = await listContacts()
+    const contacts = await contactsService.getAll()
     res.status(httpStatusCodes.OK).json({
-      status: 'success - GET ALL',
+      status: 'GET ALL - success',
       code: httpStatusCodes.OK,
 
       data: {
@@ -23,12 +18,13 @@ const getAll = async (req, res, next) => {
   }
 }
 
-const getById = async (req, res, next) => {
+const getContactById = async (req, res, next) => {
   try {
-    const contact = await getContactById(req.params)
+    const { contactId: id } = req.params
+    const contact = await contactsService.getById(id)
     if (contact) {
       return res.status(httpStatusCodes.OK).json({
-        status: 'success - GET BY ID',
+        status: 'GET BY ID - success',
         code: httpStatusCodes.OK,
         data: {
           contact,
@@ -46,11 +42,11 @@ const getById = async (req, res, next) => {
   }
 }
 
-const create = async (req, res, next) => {
+const addContact = async (req, res, next) => {
   try {
-    const contact = await addContact(req.body)
+    const contact = await contactsService.create(req.body)
     res.status(httpStatusCodes.CREATED).json({
-      status: 'success - POST',
+      status: 'POST - success',
       code: httpStatusCodes.CREATED,
       data: {
         contact,
@@ -61,12 +57,13 @@ const create = async (req, res, next) => {
   }
 }
 
-const remove = async (req, res, next) => {
+const removeContact = async (req, res, next) => {
   try {
-    const contact = await removeContact(req.params)
+    const { contactId: id } = req.params
+    const contact = await contactsService.remove(id)
     if (contact) {
       return res.status(httpStatusCodes.OK).json({
-        status: 'success - DELETE',
+        status: 'DELETE - success',
         message: 'contact deleted',
         code: httpStatusCodes.OK,
         data: {
@@ -85,12 +82,13 @@ const remove = async (req, res, next) => {
   }
 }
 
-const update = async (req, res, next) => {
+const updateContact = async (req, res, next) => {
   try {
-    const contact = await updateContact(req.params, req.body)
+    const { contactId: id } = req.params
+    const contact = await contactsService.update(id, req.body)
     if (contact) {
       return res.status(httpStatusCodes.OK).json({
-        status: 'success - PUT',
+        status: 'PUT - success',
         code: httpStatusCodes.OK,
         data: {
           contact,
@@ -108,4 +106,35 @@ const update = async (req, res, next) => {
   }
 }
 
-module.exports = { getAll, getById, create, remove, update }
+const updateStatusContact = async (req, res, next) => {
+  try {
+    const { contactId: id } = req.params
+    const contact = await contactsService.update(id, req.body)
+    if (contact) {
+      return res.status(httpStatusCodes.OK).json({
+        status: 'PATCH - success',
+        code: httpStatusCodes.OK,
+        data: {
+          contact,
+        },
+      })
+    } else {
+      return next({
+        status: httpStatusCodes.NOT_FOUND,
+        message: 'Not Found Contact',
+        data: 'Not Found',
+      })
+    }
+  } catch (error) {
+    next(error)
+  }
+}
+
+module.exports = {
+  listContacts,
+  getContactById,
+  removeContact,
+  addContact,
+  updateContact,
+  updateStatusContact,
+}

@@ -1,38 +1,34 @@
-const { v4: uuid } = require('uuid')
-const db = require('../db/db.cjs')
+const Contact = require('../schemas/contacts.cjs')
 
-const getAll = () => {
-  return db.get('contacts').value()
-}
-
-const getById = ({ contactId }) => {
-  return db.get('contacts').find({ id: contactId }).value()
-}
-
-const remove = ({ contactId }) => {
-  const [item] = db.get('contacts').remove({ id: contactId }).write()
-  return item
-}
-
-const create = body => {
-  const item = {
-    id: uuid(),
-    ...body,
+class ContactsRepository {
+  constructor() {
+    this.model = Contact
   }
-  db.get('contacts').push(item).write()
-  return item
+
+  async getAll() {
+    const results = await this.model.find({})
+    return results
+  }
+
+  async getById(id) {
+    const result = await this.model.findById({ _id: id })
+    return result
+  }
+
+  async create(body) {
+    const result = await this.model.create(body)
+    return result
+  }
+
+  async remove(id) {
+    const result = await this.model.findByIdAndRemove({ _id: id })
+    return result
+  }
+
+  async update(id, body) {
+    const result = await this.model.findByIdAndUpdate({ _id: id }, { ...body }, { new: true })
+    return result
+  }
 }
 
-const update = (contactId, body) => {
-  const item = db.get('contacts').find({ id: contactId }).assign(body).value()
-  db.write()
-  return item.id ? item : null
-}
-
-module.exports = {
-  getAll,
-  getById,
-  remove,
-  create,
-  update,
-}
+module.exports = ContactsRepository
