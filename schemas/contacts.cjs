@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const { Schema } = mongoose
+const { Schema, model } = mongoose
 
 const contactSchema = new Schema(
   {
@@ -21,6 +21,10 @@ const contactSchema = new Schema(
   { versionKey: false, timestamps: true },
 )
 
-const Contact = mongoose.model('contact', contactSchema)
+contactSchema.path('email').validate(value => {
+  return /([a-z0-9_.-]+)/
+})
+
+const Contact = model('contact', contactSchema)
 
 module.exports = Contact
