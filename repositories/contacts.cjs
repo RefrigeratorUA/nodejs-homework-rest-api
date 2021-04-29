@@ -1,4 +1,4 @@
-const Contact = require('../schemas/contacts.cjs')
+const Contact = require('../schemas/contact.cjs')
 
 class ContactsRepository {
   constructor() {
@@ -11,22 +11,22 @@ class ContactsRepository {
   }
 
   async getById(id) {
-    const result = await this.model.findById({ _id: id })
+    const result = await this.model.findById(id)
     return result
   }
 
-  async create(body) {
-    const result = await this.model.create(body)
+  async create(body, userId) {
+    const result = await this.model.create({ ...body, owner: userId })
     return result
   }
 
   async remove(id) {
-    const result = await this.model.findByIdAndRemove({ _id: id })
+    const result = await this.model.findByIdAndRemove(id)
     return result
   }
 
   async update(id, body) {
-    const result = await this.model.findByIdAndUpdate({ _id: id }, { ...body }, { new: true })
+    const result = await this.model.findByIdAndUpdate(id, { ...body }, { new: true })
     return result
   }
 }

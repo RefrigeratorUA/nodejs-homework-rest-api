@@ -1,4 +1,5 @@
 const Joi = require('joi')
+const mongoose = require('mongoose')
 const { httpStatusCodes } = require('../helpers/httpstatuscodes.cjs')
 
 const schemaCreateContact = Joi.object({
@@ -46,4 +47,15 @@ module.exports.validateUpdateContact = (req, res, next) => {
 
 module.exports.validateUpdateFavorite = (req, res, next) => {
   return validate(schemaUpdateFavorite, req.body, next)
+}
+
+module.exports.validateObjectId = (req, res, next) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.contactId)) {
+    return next({
+      status: httpStatusCodes.BAD_REQUEST,
+      message: 'Invalid Object Id',
+      data: 'Bad Request',
+    })
+  }
+  return next()
 }

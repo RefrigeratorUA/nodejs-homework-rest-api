@@ -3,16 +3,25 @@ const logger = require('morgan')
 const cors = require('cors')
 const { httpStatusCodes } = require('./helpers/httpstatuscodes.cjs')
 
-const contactsRouter = require('./routes/api/contacts.cjs')
+const usersRouter = require('./routes/users/index.cjs')
+const contactsRouter = require('./routes/contacts/index.cjs')
 
 const app = express()
 
 const formatsLogger = app.get('env') === 'development' ? 'dev' : 'short'
 
 app.use(logger(formatsLogger))
-app.use(cors())
+app.use(
+  cors({
+    origin: '*',
+    methods: 'GET, HEAD, PUT, PATCH, POST, DELETE, OPTIONS',
+    preflightContinue: false,
+    optionsSuccessStatus: httpStatusCodes.NO_CONTENT,
+  }),
+)
 app.use(express.json())
 
+app.use('/users', usersRouter)
 app.use('/api/contacts', contactsRouter)
 
 app.use((req, res) => {

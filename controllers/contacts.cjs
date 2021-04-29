@@ -44,7 +44,8 @@ const getContactById = async (req, res, next) => {
 
 const addContact = async (req, res, next) => {
   try {
-    const contact = await contactsService.create(req.body)
+    const userId = req.user.id
+    const contact = await contactsService.create(req.body, userId)
     res.status(httpStatusCodes.CREATED).json({
       status: 'POST - success',
       code: httpStatusCodes.CREATED,
