@@ -64,16 +64,13 @@ RequestBody: {
 
 ### Логин
 
-Создайте эндпоинт [`/users/login`](#login-request)
+Происходит на эндпоинте [`/users/login`](#login-request)
 
-В модели `User` найти пользователя по `email`.
+- При ошибке валидации возвращает [Ошибку валидации](#validation-error-login).
 
-Сделать валидацию всех обязательных полей (`email` и `password`). При ошибке валидации вернуть
-[Ошибку валидации](#validation-error-login).
+- Если пароль или email неверный, возвращает [Ошибку Unauthorized](#login-auth-error).
 
-- В противном случае, сравнить пароль для найденного юзера, если пароли совпадают создать токен,
-  сохранить в текущем юзере и вернуть [Успешный ответ](#login-success-response).
-- Если пароль или email неверный, вернуть [Ошибку Unauthorized](#login-auth-error).
+- При успешной авторизации получаем [Успешный ответ](#login-success-response).
 
 #### Login request
 
@@ -89,31 +86,33 @@ RequestBody: {
 #### Login validation error
 
 ```shell
-Status: 400 Bad Request
-Content-Type: application/json
-ResponseBody: <Ошибка от Joi или другой библиотеки  валидации>
-```
-
-#### Login success response
-
-```shell
-Status: 200 OK
-Content-Type: application/json
-ResponseBody: {
-  "token": "exampletoken",
-  "user": {
-    "email": "example@example.com",
-    "subscription": "starter"
-  }
+{
+    "status": "error",
+    "code": 400,
+    "message": "Field: password length must be at least 3 characters long", //пароль меньше 3-х символов
+    "data": "Bad Request"
 }
 ```
 
 #### Login auth error
 
 ```shell
-Status: 401 Unauthorized
-ResponseBody: {
-  "message": "Email or password is wrong"
+{
+    "status": "error",
+    "code": 401,
+    "message": "Invalid credentials" //Неверный или логин или пароль
+}
+```
+
+#### Login success response
+
+```shell
+{
+    "status": "success",
+    "code": 200,
+    "data": {
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYwOGFiMzVkN2FlZWIwMjIyY2UwMjU2OSIsImlhdCI6MTYxOTcwNTM1OSwiZXhwIjoxNjE5NzI2OTU5fQ.kn7e1Ly7aMOPijFE80PhdGuFGJS5jOBxWVpm7un4_4Y"
+    }
 }
 ```
 
