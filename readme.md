@@ -1,8 +1,8 @@
 # NodeJS 23. REST API для работы с коллекцией контактов
 
-## Логика аутентификации/авторизации пользователя с помощью [JWT](https://jwt.io/).
+## 1. Логика аутентификации/авторизации пользователя с помощью [JWT](https://jwt.io/).
 
-### Регистрация
+### 1.1 Регистрация
 
 Происходит на эндпоинте [`/users/signup`](#registration-request)
 
@@ -62,7 +62,7 @@ RequestBody: {
 }
 ```
 
-### Логин
+### 1.2 Логин
 
 Происходит на эндпоинте [`/users/login`](#login-request)
 
@@ -116,7 +116,7 @@ RequestBody: {
 }
 ```
 
-### Логаут
+### 1.3 Логаут
 
 Происходит на эндпоинте [`/users/logout`](#logout-request)
 
@@ -146,75 +146,3 @@ Authorization: "Bearer {{token}}"
 ```shell
 Status: 204 No Content
 ```
-
-### Проверка токена
-
-Создайте мидлвар для проверки токена и добавь его ко всем маршрутам, которые должны быть защищены.
-
-- Мидлвар берет токен из заголовков `Authorization`, проверяет токен на валидность.
-- В случае ошибки вернуть [Ошибку Unauthorized](#middleware-unauthorized-error).
-- Если валидация прошла успешно, получить из токена `id` пользователя. Найти пользователя в базе
-  данных по этому id.
-- Если пользователь существует и токен совпадает с тем, что находится в базе, записать его данные в
-  `req.user` и вызвать метод`next()`.
-- Если пользователя с таким `id` не существует или токены не совпадают, вернуть
-  [Ошибку Unauthorized](#middleware-unauthorized-error)
-
-#### Middleware unauthorized error
-
-```shell
-Status: 401 Unauthorized
-Content-Type: application/json
-ResponseBody: {
-  "message": "Not authorized"
-}
-```
-
-## Шаг 4
-
-## Шаг 5
-
-### Текущий пользователь - получить данные юзера по токену
-
-Создайте эндпоинт [`/users/current`](#current-user-request)
-
-Добавьте в маршрут мидлвар проверки токена.
-
-- Если пользователя не существует вернуть [Ошибку Unauthorized](#current-user-unauthorized-error)
-- В противном случае вернуть [Успешный ответ](#current-user-success-response)
-
-#### Current user request
-
-```shell
-GET /users/current
-Authorization: "Bearer {{token}}"
-```
-
-#### Current user unauthorized error
-
-```shell
-Status: 401 Unauthorized
-Content-Type: application/json
-ResponseBody: {
-  "message": "Not authorized"
-}
-```
-
-#### Current user success response
-
-```shell
-Status: 200 OK
-Content-Type: application/json
-ResponseBody: {
-  "email": "example@example.com",
-  "subscription": "starter"
-}
-```
-
-## Дополнительное задание - необязательное
-
-- Сделать пагинацию с [mongoose-paginate-v2](https://www.npmjs.com/package/mongoose-paginate-v2) для
-  коллекции контактов (GET /contacts?page=1&limit=20).
-- Сделать фильтрацию контактов по полю избранного (GET /contacts?favorite=true)
-- Обновление подписки (`subscription`) пользователя через эндпоинт `PATCH` `/users`. Подписка должна
-  иметь одно из следующих значений `['starter', 'pro', 'business']`
