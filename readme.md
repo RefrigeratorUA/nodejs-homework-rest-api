@@ -116,9 +116,36 @@ RequestBody: {
 }
 ```
 
-## Шаг 2
+### Логаут
 
-## Шаг 3
+Происходит на эндпоинте [`/users/logout`](#logout-request)
+
+- Если пользователь не залогинен, выдаем [Ошибку Forbidden](#logout-forbidden-error).
+
+- При успешном выходе, удаляем токен и получаем [Успешный ответ](#logout-success-response).
+
+#### Logout request
+
+```shell
+POST /users/logout
+Authorization: "Bearer {{token}}"
+```
+
+#### Logout forbidden error
+
+```shell
+{
+    "status": "error",
+    "code": 403,
+    "message": "Forbidden"
+}
+```
+
+#### Logout success response
+
+```shell
+Status: 204 No Content
+```
 
 ### Проверка токена
 
@@ -144,40 +171,6 @@ ResponseBody: {
 ```
 
 ## Шаг 4
-
-### Логаут
-
-Создайте ендпоинт [`/users/logout`](#logout-request)
-
-Добавьте в маршрут мидлвар проверки токена.
-
-- В модели `User` найти пользователя по `_id`.
-- Если пользователя не существует вернуть [Ошибку Unauthorized](#logout-unauthorized-error).
-- В противном случае, удалить токен в текущем юзере и вернуть
-  [Успешный ответ](#logout-success-response).
-
-#### Logout request
-
-```shell
-POST /users/logout
-Authorization: "Bearer {{token}}"
-```
-
-#### Logout unauthorized error
-
-```shell
-Status: 401 Unauthorized
-Content-Type: application/json
-ResponseBody: {
-  "message": "Not authorized"
-}
-```
-
-#### Logout success response
-
-```shell
-Status: 204 No Content
-```
 
 ## Шаг 5
 
