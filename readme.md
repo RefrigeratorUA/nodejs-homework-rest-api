@@ -66,7 +66,7 @@ RequestBody: {
 
 Происходит на эндпоинте [`/users/login`](#login-request)
 
-- При ошибке валидации возвращает [Ошибку валидации](#validation-error-login).
+- При ошибке валидации возвращает [Ошибку валидации](#login-validation-error).
 
 - Если пароль или email неверный, возвращает [Ошибку Unauthorized](#login-auth-error).
 
