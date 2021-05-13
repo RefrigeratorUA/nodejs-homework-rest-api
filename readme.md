@@ -56,10 +56,11 @@ RequestBody: {
 {
     "status": "success",
     "code": 201,
+    "message": "registration done",
     "data": {
-        "id": "608ab2c80adb371740515924",
+        "id": "6092e64cc63fe94d603a2bfc",
         "email": "example@example.com",
-        "subscription": "pro"
+        "subscription": "starter"
     }
 }
 ```
@@ -99,10 +100,11 @@ RequestBody: {
 #### Login auth error
 
 ```shell
-{
+{{
     "status": "error",
     "code": 401,
-    "message": "Invalid credentials" //Неверный или логин или пароль
+    "message": "Invalid credentials", //Неверный email или password
+    "data": "Unauthorized"
 }
 ```
 
@@ -112,8 +114,9 @@ RequestBody: {
 {
     "status": "success",
     "code": 200,
+    "message": "login done",
     "data": {
-        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYwOGFiMzVkN2FlZWIwMjIyY2UwMjU2OSIsImlhdCI6MTYxOTcwNTM1OSwiZXhwIjoxNjE5NzI2OTU5fQ.kn7e1Ly7aMOPijFE80PhdGuFGJS5jOBxWVpm7un4_4Y"
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYwOTJlNjRjYzYzZmU5NGQ2MDNhMmJmYyIsImlhdCI6MTYyMDI0MDEyOCwiZXhwIjoxNjIwMjYxNzI4fQ.8Y2YQP6iJNRBIyJwhVs7kVCY0DAeoP0T4AGmF6WL2CA"
     }
 }
 ```
@@ -139,7 +142,8 @@ Authorization: "Bearer {{token}}"
 {
     "status": "error",
     "code": 403,
-    "message": "Forbidden"
+    "message": "Access denied",
+    "data": "Forbidden"
 }
 ```
 
@@ -149,51 +153,94 @@ Authorization: "Bearer {{token}}"
 Status: 204 No Content
 ```
 
+### 1.4 Текущий пользователь - получить данные юзера по токену
+
+Происходит на эндпоинте [`/users/current`](#current-user-request)
+
+- Если пользователя не существует возращаем [Ошибку Unauthorized](#current-user-unauthorized-error)
+
+- При успешном запросе получаем [Успешный ответ](#current-user-success-response).
+
+#### Current user request
+
+```shell
+GET /users/current
+Authorization: "Bearer {{token}}"
+
+```
+
+#### Current user unauthorized error
+
+```shell
+{
+    "status": "error",
+    "code": 403,
+    "message": "Access denied",
+    "data": "Forbidden"
+}
+```
+
+#### Current user success response
+
+```shell
+{
+    "status": "success",
+    "code": 200,
+    "message": "current user info",
+    "data": {
+        "email": "user1@mail.com",
+        "subscription": "pro"
+    }
+}
+```
+
+### 1.5 Обновление подписки (`subscription`) пользователя
+
+Происходит на эндпоинте [`/users`](#subscription-request)
+
+- При ошибке валидации возвращает [Ошибку валидации](#subscription-validation-error).
+
+- При успешном обновлении получаем [Успешный ответ](#subscription-success-response).
+
+#### Subscription request
+
+```shell
+PATCH /users
+Authorization: "Bearer {{token}}"
+Content-Type: application/json
+RequestBody: {
+  "subscription" : "pro" //Обязательное поле. Может быть только "starter", "pro" или "business"
+}
+```
+
+#### Subscription validation error
+
+```shell
+{
+    "status": "error",
+    "code": 400,
+    "message": "Field: subscription must be one of [starter, pro, business]",
+    "data": "Bad Request"
+}
+```
+
+#### Subscription success response
+
+```shell
+{
+    "status": "success",
+    "code": 200,
+    "message": "user subscription is update",
+    "data": {
+        "email": "user1@mail.com",
+        "subscription": "pro"
+    }
+}
+```
+
 <!-- ДЗ № 2-3 -->
 
 ## 2. Рауты для работы с коллекцией контактов.
 
 <b>!!! Для работы с коллекцией контактов нужно быть обязательно залогиненным
 [`пункт 1.2`](#login-request) !!!</b>
-
-### @ GET /api/contacts
-
-- ничего не получает
-- вызывает функцию `listContacts` для работы с json-файлом `contacts.json`
-- возвращает массив всех контактов в json-формате со статусом `200`
-
-### @ GET /api/contacts/:contactId
-
-- Не получает `body`
-- Получает параметр `contactId`
-- вызывает функцию getById для работы с json-файлом contacts.json
-- если такой id есть, возвращает обьект контакта в json-формате со статусом `200`
-- если такого id нет, возвращает json с ключом `"message": "Not found"` и статусом `404`
-
-### @ POST /api/contacts
-
-- Получает `body` в формате `{name, email, phone}`
-- Если в body нет каких-то обязательных полей, возвращает json с ключом
-  `{"message": "missing required name field"}` и статусом `400`
-- Если с `body` все хорошо, добавляет уникальный идентификатор в объект контакта
-- Вызывает функцию `addContact(body)` для сохранения контакта в файле `contacts.json`
-- По результату работы функции возвращает объект с добавленным `id` `{id, name, email, phone}` и
-  статусом `201`
-
-### @ DELETE /api/contacts/:contactId
-
-- Не получает `body`
-- Получает параметр `contactId`
-- вызывает функцию `removeContact` для работы с json-файлом `contacts.json`
-- если такой `id` есть, возвращает json формата `{"message": "contact deleted"}` и статусом `200`
-- если такого `id` нет, возвращает json с ключом `"message": "Not found"` и статусом `404`
-
-### @ PUT /api/contacts/:contactId
-
-- Получает параметр `contactId`
-- Получает `body` в json-формате c обновлением любых полей `name, email и phone`
-- Если `body` нет, возвращает json с ключом `{"message": "missing fields"}` и статусом `400`
-- Если с `body` все хорошо, вызывает функцию `updateContact(contactId, body)` (напиши ее) для
-  обновления контакта в файле `contacts.json`
-- По результату работы функции возвращает обновленный объект контакта и статусом `200`. В противном
-  случае, возвращает json с ключом `"message": "Not found"` и статусом `404`

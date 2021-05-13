@@ -13,10 +13,13 @@ const {
   validateUpdateContact,
   validateUpdateFavorite,
   validateObjectId,
+  validateQueryContact,
 } = require('../../validation/contacts.cjs')
 const guard = require('../../helpers/guard.cjs')
 
-router.get('/', guard, listContacts).post('/', guard, validateCreateContact, addContact)
+router
+  .get('/', guard, validateQueryContact, listContacts)
+  .post('/', guard, validateCreateContact, addContact)
 
 router
   .get('/:contactId', guard, validateObjectId, getContactById)

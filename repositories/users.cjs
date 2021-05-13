@@ -5,8 +5,12 @@ class UsersRepository {
     this.model = User
   }
 
-  async findByID(id) {
+  async findById(id) {
     return await this.model.findById(id)
+  }
+
+  async findByToken(token) {
+    return await this.model.findOne({ token })
   }
 
   async findByEmail(email) {
@@ -21,6 +25,10 @@ class UsersRepository {
 
   async updateToken(id, token) {
     return await this.model.updateOne({ _id: id }, { token })
+  }
+
+  async update(id, body) {
+    return await this.model.findOneAndUpdate({ _id: id }, { ...body }, { new: true })
   }
 }
 

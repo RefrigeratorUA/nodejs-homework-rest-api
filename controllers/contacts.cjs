@@ -4,11 +4,13 @@ const contactsService = new ContactsService()
 
 const listContacts = async (req, res, next) => {
   try {
-    const contacts = await contactsService.getAll()
+    const userId = req.user?.id
+    const query = req.query
+    const contacts = await contactsService.getAll(userId, query)
     res.status(httpStatusCodes.OK).json({
-      status: 'GET ALL - success',
+      status: 'success',
       code: httpStatusCodes.OK,
-
+      message: 'OK',
       data: {
         contacts,
       },
@@ -20,19 +22,22 @@ const listContacts = async (req, res, next) => {
 
 const getContactById = async (req, res, next) => {
   try {
+    const userId = req.user?.id
     const { contactId: id } = req.params
-    const contact = await contactsService.getById(id)
+    const contact = await contactsService.getById(userId, id)
     if (contact) {
       return res.status(httpStatusCodes.OK).json({
-        status: 'GET BY ID - success',
+        status: 'success',
         code: httpStatusCodes.OK,
+        message: 'OK',
         data: {
           contact,
         },
       })
     } else {
       return next({
-        status: httpStatusCodes.NOT_FOUND,
+        status: 'error',
+        code: httpStatusCodes.NOT_FOUND,
         message: 'Not Found Contact',
         data: 'Not Found',
       })
@@ -44,11 +49,12 @@ const getContactById = async (req, res, next) => {
 
 const addContact = async (req, res, next) => {
   try {
-    const userId = req.user.id
-    const contact = await contactsService.create(req.body, userId)
+    const userId = req.user?.id
+    const contact = await contactsService.create(userId, req.body)
     res.status(httpStatusCodes.CREATED).json({
-      status: 'POST - success',
+      status: 'success',
       code: httpStatusCodes.CREATED,
+      message: 'contact created',
       data: {
         contact,
       },
@@ -60,20 +66,22 @@ const addContact = async (req, res, next) => {
 
 const removeContact = async (req, res, next) => {
   try {
+    const userId = req.user?.id
     const { contactId: id } = req.params
-    const contact = await contactsService.remove(id)
+    const contact = await contactsService.remove(userId, id)
     if (contact) {
       return res.status(httpStatusCodes.OK).json({
-        status: 'DELETE - success',
-        message: 'contact deleted',
+        status: 'DELETE',
         code: httpStatusCodes.OK,
+        message: 'contact deleted',
         data: {
           contact,
         },
       })
     } else {
       return next({
-        status: httpStatusCodes.NOT_FOUND,
+        status: 'error',
+        code: httpStatusCodes.NOT_FOUND,
         message: 'Not Found Contact',
         data: 'Not Found',
       })
@@ -85,19 +93,22 @@ const removeContact = async (req, res, next) => {
 
 const updateContact = async (req, res, next) => {
   try {
+    const userId = req.user?.id
     const { contactId: id } = req.params
-    const contact = await contactsService.update(id, req.body)
+    const contact = await contactsService.update(userId, id, req.body)
     if (contact) {
       return res.status(httpStatusCodes.OK).json({
-        status: 'PUT - success',
+        status: 'success',
         code: httpStatusCodes.OK,
+        message: 'contact update',
         data: {
           contact,
         },
       })
     } else {
       return next({
-        status: httpStatusCodes.NOT_FOUND,
+        status: 'error',
+        code: httpStatusCodes.NOT_FOUND,
         message: 'Not Found Contact',
         data: 'Not Found',
       })
@@ -109,19 +120,22 @@ const updateContact = async (req, res, next) => {
 
 const updateStatusContact = async (req, res, next) => {
   try {
+    const userId = req.user?.id
     const { contactId: id } = req.params
-    const contact = await contactsService.update(id, req.body)
+    const contact = await contactsService.update(userId, id, req.body)
     if (contact) {
       return res.status(httpStatusCodes.OK).json({
-        status: 'PATCH - success',
+        status: 'success',
         code: httpStatusCodes.OK,
+        message: 'contact status is update',
         data: {
           contact,
         },
       })
     } else {
       return next({
-        status: httpStatusCodes.NOT_FOUND,
+        status: 'error',
+        code: httpStatusCodes.NOT_FOUND,
         message: 'Not Found Contact',
         data: 'Not Found',
       })

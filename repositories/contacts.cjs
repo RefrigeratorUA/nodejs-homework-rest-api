@@ -5,28 +5,62 @@ class ContactsRepository {
     this.model = Contact
   }
 
-  async getAll() {
-    const results = await this.model.find({})
+  async getAll(userId, query) {
+    const { sortBy, sortByDesc, filter, favorite = null, limit = 5, offset = 0 } = query
+    const optionsSearch = { owner: userId }
+    if (favorite !== null) {
+      optionsSearch.favorite = favorite
+    }
+
+    const results = await this.model
+      .paginate(optionsSearch, {
+        limit,
+        offset,
+        sort: {
+          ...(sortBy ? { [`${sortBy}`]: 1 } : {}),
+          ...(sortByDesc ? { [`${sortByDesc}`]: -1 } : {}),
+        },
+        select: filter ? filter.split('|').join(' ') : '',
+        populate: {
+          path: 'owner',
+          select: 'name email subscription -_id',
+        },
+      })
+      .then(({ docs }) => docs)
     return results
   }
 
-  async getById(id) {
-    const result = await this.model.findById(id)
+  async getById(userId, id) {
+    const result = await this.model.findOne({ _id: id, owner: userId }).populate({
+      path: 'owner',
+      select: 'name email subscription -_id',
+    })
     return result
   }
 
-  async create(body, userId) {
-    const result = await this.model.create({ ...body, owner: userId })
+  async create(userId, body) {
+    const result = await this.model.create({ ...body, owner: userId }).populate({
+      path: 'owner',
+      select: 'name email subscription -_id',
+    })
     return result
   }
 
-  async remove(id) {
-    const result = await this.model.findByIdAndRemove(id)
+  async remove(userId, id) {
+    const result = await this.model.findByIdAndRemove({ _id: id, owner: userId }).populate({
+      path: 'owner',
+      select: 'name email subscription -_id',
+    })
     return result
   }
 
-  async update(id, body) {
-    const result = await this.model.findByIdAndUpdate(id, { ...body }, { new: true })
+  async update(userId, id, body) {
+    const result = await this.model
+      .findByIdAndUpdate({ _id: id, owner: userId }, { ...body }, { new: true })
+      .populate({
+        path: 'owner',
+        select: 'name email subscription -_id',
+      })
     return result
   }
 }

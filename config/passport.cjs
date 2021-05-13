@@ -14,11 +14,12 @@ passport.use(
   new Strategy(params, async (payload, done) => {
     try {
       const service = new UsersService()
-      const user = await service.findByID(payload.id)
+      const user = await service.findById(payload.id)
       if (!user) {
         return done(
           new Error({
-            status: httpStatusCodes.NOT_FOUND,
+            status: 'error',
+            code: httpStatusCodes.NOT_FOUND,
             message: 'Not Found User',
             data: 'Not Found',
           }),
@@ -29,7 +30,7 @@ passport.use(
       }
       return done(null, user)
     } catch (error) {
-      done(error)
+      done(error, false)
     }
   }),
 )
