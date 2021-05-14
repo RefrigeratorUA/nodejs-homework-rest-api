@@ -2,17 +2,47 @@ const express = require('express')
 const logger = require('morgan')
 const cors = require('cors')
 const { httpStatusCodes } = require('./helpers/httpstatuscodes.cjs')
+const boolParser = require('express-query-boolean')
+const helmet = require('helmet')
+const rateLimit = require('express-rate-limit')
 
-const contactsRouter = require('./routes/api/contacts.cjs')
+const usersRouter = require('./routes/users/index.cjs')
+const contactsRouter = require('./routes/contacts/index.cjs')
 
 const app = express()
 
 const formatsLogger = app.get('env') === 'development' ? 'dev' : 'short'
 
-app.use(logger(formatsLogger))
-app.use(cors())
-app.use(express.json())
+app.use(helmet())
 
+app.use(logger(formatsLogger))
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  handler: (req, res, next) => {
+    return res.status(httpStatusCodes.TOO_MANY_REQUESTS).json({
+      status: 'error',
+      code: httpStatusCodes.TOO_MANY_REQUESTS,
+      message: 'Too Many Requests',
+      data: 'HTTP_TOO_MANY_REQUESTS',
+    })
+  },
+})
+app.use(limiter)
+
+app.use(
+  cors({
+    origin: '*',
+    methods: 'GET, HEAD, PUT, PATCH, POST, DELETE, OPTIONS',
+    preflightContinue: false,
+    optionsSuccessStatus: httpStatusCodes.NO_CONTENT,
+  }),
+)
+app.use(express.json({ limit: 100000 }))
+app.use(boolParser())
+
+app.use('/users', usersRouter)
 app.use('/api/contacts', contactsRouter)
 
 app.use((req, res) => {
@@ -25,12 +55,12 @@ app.use((req, res) => {
 })
 
 app.use((err, req, res, next) => {
-  err.status = err.status ? err.status : httpStatusCodes.INTERNAL_SERVER_ERROR
-  res.status(err.status).json({
-    status: err.status === 500 ? 'fail' : 'error',
-    code: err.status,
+  err.code = err.code ? err.code : httpStatusCodes.INTERNAL_SERVER_ERROR
+  res.status(err.code).json({
+    status: err.code === 500 ? 'fail' : 'error',
+    code: err.code,
     message: err.message,
-    data: err.status === 500 ? 'Internal Server Error' : err.data,
+    data: err.code === 500 ? 'Internal Server Error' : err.data,
   })
 })
 

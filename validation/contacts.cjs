@@ -1,4 +1,5 @@
 const Joi = require('joi')
+const mongoose = require('mongoose')
 const { httpStatusCodes } = require('../helpers/httpstatuscodes.cjs')
 
 const schemaCreateContact = Joi.object({
@@ -23,12 +24,22 @@ const schemaUpdateFavorite = Joi.object({
   favorite: Joi.boolean().required(),
 })
 
+const schemaQueryContact = Joi.object({
+  sortBy: Joi.string().valid('name', 'email', 'id').optional(),
+  sortByDesc: Joi.string().valid('name', 'email', 'id').optional(),
+  filter: Joi.string().optional(),
+  limit: Joi.number().integer().min(1).max(50).optional(),
+  offset: Joi.number().integer().min(0).optional(),
+  favorite: Joi.boolean().optional(),
+}).without('sortBy', 'sortByDesc')
+
 const validate = (schema, body, next) => {
   const { error } = schema.validate(body)
   if (error) {
     const [{ message }] = error.details
     return next({
-      status: httpStatusCodes.BAD_REQUEST,
+      status: 'error',
+      code: httpStatusCodes.BAD_REQUEST,
       message: `Field: ${message.replace(/"/g, '')}`,
       data: 'Bad Request',
     })
@@ -46,4 +57,20 @@ module.exports.validateUpdateContact = (req, res, next) => {
 
 module.exports.validateUpdateFavorite = (req, res, next) => {
   return validate(schemaUpdateFavorite, req.body, next)
+}
+
+module.exports.validateQueryContact = (req, res, next) => {
+  return validate(schemaQueryContact, req.query, next)
+}
+
+module.exports.validateObjectId = (req, res, next) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.contactId)) {
+    return next({
+      status: 'error',
+      code: httpStatusCodes.BAD_REQUEST,
+      message: 'Invalid Object Id',
+      data: 'Bad Request',
+    })
+  }
+  return next()
 }
