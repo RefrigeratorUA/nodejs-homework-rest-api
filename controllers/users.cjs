@@ -1,5 +1,6 @@
 const { AuthService, UsersService } = require('../services/index.cjs')
 const { httpStatusCodes } = require('../helpers/httpstatuscodes.cjs')
+const { saveAvatarUserCloud } = require('../helpers/save-avatar-cloud.cjs')
 const authService = new AuthService()
 const usersService = new UsersService()
 
@@ -15,7 +16,7 @@ const registration = async (req, res, next) => {
     })
   }
   try {
-    const { id, subscription: newSubscription } = await usersService.createContact({
+    const newUser = await usersService.createContact({
       name,
       email,
       password,
@@ -26,9 +27,10 @@ const registration = async (req, res, next) => {
       code: httpStatusCodes.CREATED,
       message: 'registration done',
       data: {
-        id,
-        email,
-        subscription: newSubscription,
+        id: newUser.id,
+        email: newUser.email,
+        subscription: newUser.subscription,
+        avatar: newUser.avatar,
       },
     })
   } catch (error) {
@@ -100,7 +102,7 @@ const getCurrent = async (req, res, next) => {
     const token = await req.user?.token
     const user = await usersService.findByToken(token)
     if (user) {
-      const { email, subscription } = user
+      const { email, subscription, avatar } = user
       return res.status(httpStatusCodes.OK).json({
         status: 'success',
         code: httpStatusCodes.OK,
@@ -108,6 +110,7 @@ const getCurrent = async (req, res, next) => {
         data: {
           email,
           subscription,
+          avatar,
         },
       })
     } else {
@@ -123,10 +126,27 @@ const getCurrent = async (req, res, next) => {
   }
 }
 
+const updateAvatar = async (req, res, next) => {
+  try {
+    const { id } = req.user
+    const { idCloudAvatar, avatarUrl } = await saveAvatarUserCloud(req)
+    await usersService.updateAvatar(id, avatarUrl, idCloudAvatar)
+    return res.status(httpStatusCodes.OK).json({
+      status: 'success',
+      code: httpStatusCodes.OK,
+      message: 'user avatar is update',
+      data: { avatarUrl },
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 module.exports = {
   registration,
   login,
   logout,
   updateSubscription,
   getCurrent,
+  updateAvatar,
 }
