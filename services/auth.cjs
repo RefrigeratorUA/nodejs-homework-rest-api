@@ -11,6 +11,7 @@ class AuthService {
   async login({ email, password }) {
     const user = await this.repositories.users.findByEmail(email)
     if (!user) return null
+    if (!user.verify) return null
     const id = user.id
     await this.logout(id)
     const isValidPassword = await user.validPassword(password)
@@ -23,6 +24,10 @@ class AuthService {
 
   async logout(id) {
     return await this.repositories.users.updateToken(id, null)
+  }
+
+  async verifyUser(token) {
+    return await this.repositories.users.findByVerifyTokenEmail(token)
   }
 }
 

@@ -1,12 +1,15 @@
 const { AuthService, UsersService } = require('../services/index.cjs')
 const { httpStatusCodes } = require('../helpers/httpstatuscodes.cjs')
 const { saveAvatarUserCloud } = require('../helpers/save-avatar-cloud.cjs')
+const EmailService = require('../services/email.cjs')
+
 const authService = new AuthService()
 const usersService = new UsersService()
 
+require('dotenv').config()
+
 const registration = async (req, res, next) => {
-  const { name, email, password, subscription } = req.body
-  const user = await usersService.findByEmail(email)
+  const user = await usersService.findByEmail(req.body.email)
   if (user) {
     return next({
       status: 'error',
@@ -16,21 +19,25 @@ const registration = async (req, res, next) => {
     })
   }
   try {
-    const newUser = await usersService.createContact({
-      name,
-      email,
-      password,
-      subscription,
-    })
+    const newUser = await usersService.createContact(req.body)
+    const { id, name, email, subscription, avatar, verifyTokenEmail } = newUser
+
+    try {
+      const emailService = new EmailService(process.env.NODE_ENV)
+      await emailService.sendVerifyEmail(verifyTokenEmail, email, name)
+    } catch (error) {
+      console.log(error.message)
+    }
+
     return res.status(httpStatusCodes.CREATED).json({
       status: 'success',
       code: httpStatusCodes.CREATED,
       message: 'registration done',
       data: {
-        id: newUser.id,
-        email: newUser.email,
-        subscription: newUser.subscription,
-        avatar: newUser.avatar,
+        id,
+        email,
+        subscription,
+        avatar,
       },
     })
   } catch (error) {
@@ -142,6 +149,33 @@ const updateAvatar = async (req, res, next) => {
   }
 }
 
+const verifyUser = async (req, res, next) => {
+  try {
+    const user = await authService.verifyUser(req.params.token)
+    if (user) {
+      return res.status(httpStatusCodes.OK).json({
+        status: 'success',
+        code: httpStatusCodes.OK,
+        message: 'Verification done',
+        data: {
+          token: user.token,
+        },
+      })
+    } else {
+      return next({
+        status: 'error',
+        code: httpStatusCodes.BAD_REQUEST,
+        message: "Your verification's token is't valid. Contact to support",
+        data: 'Unauthorized',
+      })
+    }
+  } catch (error) {
+    next(error)
+  }
+}
+
+const repeatEmailVerify = async (req, res, next) => {}
+
 module.exports = {
   registration,
   login,
@@ -149,4 +183,6 @@ module.exports = {
   updateSubscription,
   getCurrent,
   updateAvatar,
+  verifyUser,
+  repeatEmailVerify,
 }

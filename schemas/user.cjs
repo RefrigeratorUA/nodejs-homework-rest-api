@@ -3,6 +3,7 @@ const { Schema, model } = mongoose
 const gravatar = require('gravatar')
 const { Subscribe, SALT_FACTOR } = require('../helpers/constants.cjs')
 const bcrypt = require('bcryptjs')
+const { nanoid } = require('nanoid')
 
 const userSchema = new Schema(
   {
@@ -40,6 +41,15 @@ const userSchema = new Schema(
     idCloudAvatar: {
       type: String,
       default: null,
+    },
+    verify: {
+      type: Boolean,
+      default: false,
+    },
+    verifyTokenEmail: {
+      type: String,
+      required: true,
+      default: nanoid(),
     },
   },
   { versionKey: false, timestamps: true },
