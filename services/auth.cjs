@@ -27,7 +27,12 @@ class AuthService {
   }
 
   async verifyUser(token) {
-    return await this.repositories.users.findByVerifyTokenEmail(token)
+    const user = await this.repositories.users.findByVerifyTokenEmail(token)
+    if (user) {
+      await this.repositories.users.updateVerifyToken(user.id, true, null)
+      return user
+    }
+    return null
   }
 }
 

@@ -157,15 +157,12 @@ const verifyUser = async (req, res, next) => {
         status: 'success',
         code: httpStatusCodes.OK,
         message: 'Verification done',
-        data: {
-          token: user.token,
-        },
       })
     } else {
       return next({
         status: 'error',
         code: httpStatusCodes.BAD_REQUEST,
-        message: "Your verification's token is't valid. Contact to support",
+        message: "Your verification token isn't valid. Contact to support",
         data: 'Unauthorized',
       })
     }
@@ -174,7 +171,33 @@ const verifyUser = async (req, res, next) => {
   }
 }
 
-const repeatEmailVerify = async (req, res, next) => {}
+const repeatEmailVerify = async (req, res, next) => {
+  try {
+    const user = await usersService.findByEmail(req.body.email)
+    if (user) {
+      const { name, verifyTokenEmail, email } = user
+      const emailService = new EmailService(process.env.NODE_ENV)
+      await emailService.sendVerifyEmail(verifyTokenEmail, email, name)
+      return res.status(httpStatusCodes.OK).json({
+        status: 'success',
+        code: httpStatusCodes.OK,
+        message: 'Verification email resubmitted',
+        data: {
+          email,
+        },
+      })
+    } else {
+      return next({
+        status: 'error',
+        code: httpStatusCodes.NOT_FOUND,
+        message: 'User not found',
+        data: 'Not Found',
+      })
+    }
+  } catch (error) {
+    next(error)
+  }
+}
 
 module.exports = {
   registration,
