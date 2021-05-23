@@ -13,6 +13,10 @@ class UsersRepository {
     return await this.model.findOne({ token })
   }
 
+  async findByVerifyTokenEmail(token) {
+    return await this.model.findOne({ verifyTokenEmail: token })
+  }
+
   async findByEmail(email) {
     return await this.model.findOne({ email })
   }
@@ -25,6 +29,10 @@ class UsersRepository {
 
   async updateToken(id, token) {
     return await this.model.updateOne({ _id: id }, { token })
+  }
+
+  async updateVerifyToken(id, verify, verifyToken) {
+    return await this.model.updateOne({ _id: id }, { verify, verifyTokenEmail: verifyToken })
   }
 
   async update(id, body) {
